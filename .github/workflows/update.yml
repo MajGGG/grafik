@@ -1,0 +1,35 @@
+name: Aktualizuj grafik
+
+on:
+  schedule:
+    - cron: '0 */3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node src/index.js
+        env:
+          KADRO_EMAIL: ${{ secrets.KADRO_EMAIL }}
+          KADRO_PASSWORD: ${{ secrets.KADRO_PASSWORD }}
+          FEED_TOKEN: ${{ secrets.FEED_TOKEN }}
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+      - uses: actions/deploy-pages@v4
